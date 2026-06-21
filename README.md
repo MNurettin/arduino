@@ -1,53 +1,65 @@
-# Arduino Potentiometer Mouse Controller
+# Arduino-Based Hardware Mouse Controller
 
-A lightweight, low-latency mouse controller system that enables hardware-based cursor positioning using an Arduino and custom C++ console application via Windows API (`windows.h`). 
+This project implements a low-latency, lightweight hardware mouse cursor positioning system using an Arduino Uno and a native C++ console application via the Win32 API (`windows.h`). 
 
-The project avoids heavy frameworks (like `iostream`) and utilizes low-level serial communication protocols to ensure maximum efficiency.
+The architecture is optimized for minimal resource usage by avoiding heavy high-level streams like `iostream` and relying strictly on standard C libraries and low-level Windows serial communication methods.
 
 ## 🚀 Features
-- **Zero-Overhead C++ Client:** Built entirely on standard C libraries (`stdio.h`) and Win32 API. No heavy C++ stream overhead.
-- **Custom Packet Framing:** Implements a robust **SOF (Start of Frame)** mechanism using a specific Sync Byte (`255`) to prevent data alignment drift.
-- **Byte Stuffing / Escaping:** Data integrity is secured by escaping data bytes that match the sync signature (`255 -> 254`).
-- **Deadzone Filtering:** Noise reduction implemented on the hardware side to prevent cursor jittering.
+
+* **Zero-Overhead Client:** Built entirely with `<stdio.h>` and native Windows handles, ensuring near-zero CPU and memory overhead during port polling.
+* **Packet Framing Protocol:** Utilizes a custom Start-of-Frame (SOF) signature (`255`) to maintain absolute byte alignment and prevent synchronization drift.
+* **Byte Stuffing / Data Escaping:** Prevents coordinate data collision by escaping raw data bytes that mimic the frame delimiter (`255 -> 254`).
+* **Hardware Noise Filtering:** Implements a localized deadzone threshold on the microcontroller to eliminate signal jitter from the analog potentiometers.
 
 ## 🛠️ Project Structure
-- `/Arduino_Code`: Contains the `.ino` sketch for reading analog pins and streaming byte frames.
-- `/CPP_Console_Code`: Contains the native Win32 C++ application that reads the serial port and controls the mouse cursor.
 
-## ⚙️ Architecture & Protocol Design
-The communication protocol sends a **5-byte packet** for every verified coordinate change:
+* `/arduino_ide` - Contains the microcontroller firmware (`.ino`) for polling analog inputs and packet serialization.
+* `/cpp_console_code` - Contains the native Windows C++ source code responsible for serial reading and interfacing with the OS cursor.
+
+## ⚙️ Communication Protocol & Architecture
+
+The system communicates over a 9600 Baud rate serial line using a strictly defined 5-byte packet structure for every validated coordinate update:
+
 `[ 255 (SOF) ] -> [ X_High_Byte ] -> [ X_Low_Byte ] -> [ Y_High_Byte ] -> [ Y_Low_Byte ]`
 
-- **Resolution Mapping:** The 10-bit analog input (`0-1023`) is mapped linearly to screen pixel spaces (e.g., `1920x1080`) using direct integer math without floating-point performance loss.
+Coordinate transformation mappings convert the 10-bit hardware analog resolution (`0-1023`) directly into the software pixel coordinate space (`1920x1080`) using fixed-point integer mathematics to eliminate floating-point calculation latencies.
 
-## 💻 Installation & Usage
-1. Upload the sketch inside `Arduino_Code` to your Arduino board.
-2. Connect two potentiometers to `A0` and `A1` pins.
-3. Open the C++ project, ensure your COM port identifier matches (default is `\\\\.\\COM3`), compile and run.
+## 💻 Installation and Deployment
 
-# Arduino Potansiyometre ile Fare (Mouse) Kontrolcüsü
+1. Upload the code inside `arduino_ide` folder to your Arduino.
+2. Power up the potentiometers so that their signal pins connect to the `A0` and `A1` analog pins on the Arduino Uno.
+3. Ensure the COM port identifier inside `cpp_console_code` matches your Arduino (Default: `\\\\.\\COM3`), compile and run the `cpp_console_code` file.
 
-Bu proje, bir Arduino ve Windows API (`windows.h`) kullanan yerel bir C++ konsol uygulaması aracılığıyla donanım tabanlı imleç konumlandırması sağlayan hafif ve düşük gecikmeli bir kontrolcü sistemidir.
+---
 
-Maksimum performans ve bellek optimizasyonu için `iostream` gibi hantal kütüphaneler yerine saf C kütüphaneleri ve alt seviye seri iletişim mimarisi tercih edilmiştir.
+# Arduino Tabanlı Donanımsal Fare Kontrolcüsü
+
+Bu proje, bir Arduino Uno ve Win32 API (`windows.h`) kullanan yerel bir C++ konsol uygulaması aracılığıyla düşük gecikmeli ve hafif bir donanım tabanlı imleç konumlandırma sistemi gerçekleştirir.
+
+Mimari, `iostream` gibi yüksek seviyeli hantal akışlar yerine tamamen standart C kütüphanelerine ve alt seviye Windows seri iletişim yöntemlerine dayanarak minimum kaynak kullanımı için optimize edilmiştir.
 
 ## 🚀 Özellikler
-- **Sıfır Yük (Zero-Overhead) C++ İstemcisi:** Tamamen `<stdio.h>` ve Win32 API mimarisi üzerine kurulmuştur.
-- **Özel Paket Çerçeveleme (Packet Framing):** Veri kaymasını (Hizalama hatası) önlemek için `255` imzasını kullanan gelişmiş bir **SOF (Start of Frame)** protokolü içerir.
-- **Byte Stuffing (Veri Kaçış Mekanizması):** Koordinat verilerinin başlangıç imzasıyla karışmasını engellemek için veri içindeki 255 değerleri otomatik olarak 254'e dönüştürülür.
-- **Donanımsal Filtreleme (Deadzone):** Potansiyometrelerdeki elektriksel parazit ve titremeleri engellemek için Arduino tarafında gürültü filtresi uygulanmıştır.
+
+* **Sıfır Yük (Zero-Overhead) İstemci:** Tamamen `<stdio.h>` ve yerel Windows handle yapıları ile oluşturulmuştur; port tarama işlemleri sırasında işlemci ve bellek yükünü sıfıra yakın tutar.
+* **Paket Çerçeveleme Protokolü:** Mutlak byte hizalamasını korumak ve senkronizasyon kaymasını önlemek için özel bir Başlangıç Sınırlandırıcı (SOF) imzası (`255`) kullanır.
+* **Byte Stuffing / Veri Kaçış Mekanizması:** Çerçeve sınırlandırıcı imzayı taklit eden ham koordinat verilerinin çakışmasını engellemek için veri byte'larını otomatik olarak kaçırır (`255 -> 254`).
+* **Donanımsal Sinyal Filtreleme:** Analog potansiyometrelerden gelen sinyal titremelerini ortadan kaldırmak için mikrodenetleyici üzerinde yerelleştirilmiş bir eşik değeri (deadzone) uygular.
 
 ## 🛠️ Proje Yapısı
-- `/Arduino_Code`: Analog pinleri okuyan ve paket fırlatan `.ino` kodlarını içerir.
-- `/CPP_Console_Code`: Seri portu dinleyen ve imleci hareket ettiren Win32 C++ kodlarını içerir.
 
-## ⚙️ Protokol Tasarımı
-Haberleşme hattı, her koordinat değiştiğinde **5 byte'lık bir paket** akışı gerçekleştirir:
+* `/arduino_ide` - Analog girişleri tarayan ve paket serileştirmesini gerçekleştiren mikrodenetleyici yazılımını (`.ino`) içerir.
+* `/cpp_console_code` - Seri portu okuyan ve işletim sistemi imleci ile arayüz oluşturan yerel Windows C++ kaynak kodunu içerir.
+
+## ⚙️ İletişim Protokolü ve Mimari
+
+Sistem, doğrulanan her koordinat güncellemesi için kesin olarak tanımlanmış 5 byte'lık bir paket yapısı kullanarak 9600 Baud hızında bir seri hat üzerinden haberleşir:
+
 `[ 255 (SOF) ] -> [ X_Tam_Sayı ] -> [ X_Mod_Değeri ] -> [ Y_Tam_Sayı ] -> [ Y_Mod_Değeri ]`
 
-- **Çözünürlük Eşleme:** 10-bitlik analog veri (`0-1023`), float (ondalıklı) sayı yükü oluşturmadan doğrudan tam sayı matematiği ile ekran çözünürlüğüne (`1920x1080`) oranlanır.
+Koordinat dönüşüm eşlemeleri, ondalıklı sayı hesaplama gecikmelerini ortadan kaldırmak için doğrudan sabit noktalı tam sayı matematiği kullanarak 10-bitlik donanım analog çözünürlüğünü (`0-1023`) yazılım piksel koordinat alanına (`1920x1080`) dönüştürür.
 
 ## 💻 Kurulum ve Çalıştırma
-1. `Arduino_Code` klasöründeki kodu Arduino'nuza yükleyin.
-2. Potansiyometreleri `A0` ve `A1` analog pinlerine bağlayın.
-3. C++ kodundaki COM port adının Arduino'nuzla eşleştiğinden emin olun (Varsayılan: `\\\\.\\COM3`), derleyin ve çalıştırın.
+
+1. `arduino_ide` klasöründeki kodu Arduino'nuza yükleyin.
+2. Potansiyometrelere, sinyal bacakları arduino uno üzerindeki `A0` ve `A1` analog pinlerine gelicek şekilde güç verin.
+3. `cpp_console_code` içindeki COM port adının Arduino'nuzla eşleştiğinden emin olun (Varsayılan: `\\\\.\\COM3`), `cpp_console_code` dosyasını derleyin ve çalıştırın.
