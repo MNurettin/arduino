@@ -30,6 +30,10 @@ Coordinate transformation mappings convert the 10-bit hardware analog resolution
 2. Power up the potentiometers so that their signal pins connect to the `A0` and `A1` analog pins on the Arduino Uno.
 3. Ensure the COM port identifier inside `cpp_console_code` matches your Arduino (Default: `\\\\.\\COM3`), compile and run the `cpp_console_code` file.
 
+## Circuit Diagram
+
+![Circuit Diagram](circuit.png)
+
 ---
 
 # Arduino Tabanlı Donanımsal Fare Kontrolcüsü
@@ -63,3 +67,7 @@ Koordinat dönüşüm eşlemeleri, ondalıklı sayı hesaplama gecikmelerini ort
 1. `arduino_ide` klasöründeki kodu Arduino'nuza yükleyin.
 2. Potansiyometrelere, sinyal bacakları arduino uno üzerindeki `A0` ve `A1` analog pinlerine gelicek şekilde güç verin.
 3. `cpp_console_code` içindeki COM port adının Arduino'nuzla eşleştiğinden emin olun (Varsayılan: `\\\\.\\COM3`), `cpp_console_code` dosyasını derleyin ve çalıştırın.
+
+## Devre Şeması / Circuit Diagram
+
+![Devre Şeması](circuit.png)
